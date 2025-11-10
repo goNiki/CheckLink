@@ -1,7 +1,6 @@
 package links
 
 import (
-	"fmt"
 	"goNiki/CheckLink/internal/dto"
 	"goNiki/CheckLink/internal/infrastructure/logger/sl"
 	"net/http"
@@ -15,14 +14,21 @@ func (h *handler) CheckLink(w http.ResponseWriter, r *http.Request) {
 
 	if err := render.DecodeJSON(r.Body, &req); err != nil {
 		h.log.Error("ErrorDecode", sl.Error(err))
+		render.Status(r, http.StatusBadGateway)
+		return
+	}
+
+	if len(req.Links) == 0 {
+		h.log.Error("links not found")
+		render.Status(r, http.StatusBadRequest)
 		return
 	}
 
 	links := make(map[string]string, len(req.Links))
 
-	for k, v := range req.Links {
-		fmt.Printf("%v: %s\n", k, v)
-		links[v] = "available"
+	for _, v := range req.Links {
+		status, _ := h.linkchecker.LinkCheck(r.Context(), v)
+		links[v] = status
 	}
 
 	response := dto.Response{
