@@ -2,6 +2,7 @@ package links
 
 import (
 	"goNiki/CheckLink/internal/dto"
+	"goNiki/CheckLink/internal/http/handler/converter"
 	"goNiki/CheckLink/internal/infrastructure/logger/sl"
 	"net/http"
 
@@ -24,17 +25,14 @@ func (h *handler) CheckLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	links := make(map[string]string, len(req.Links))
-
-	for _, v := range req.Links {
-		status, _ := h.linkchecker.LinkCheck(r.Context(), v)
-		links[v] = status
+	linkbatch, err := h.checker.CheckBatch(r.Context(), req.Links)
+	if err != nil {
+		h.log.Error("Error", sl.Error(err))
+		render.Status(r, http.StatusInternalServerError)
+		return
 	}
 
-	response := dto.Response{
-		Links:    links,
-		LinksNum: int64(len(req.Links)),
-	}
+	response := converter.LinkBatchToResponce(&linkbatch)
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response)

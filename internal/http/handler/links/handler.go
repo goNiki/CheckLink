@@ -6,13 +6,13 @@ import (
 )
 
 type handler struct {
-	log         *slog.Logger
-	linkchecker services.Linkchecker
+	log     *slog.Logger
+	checker services.Checker
 }
 
-func NewLinksHandler(log *slog.Logger, linkchecker services.Linkchecker) *handler {
+func NewLinksHandler(log *slog.Logger, checker services.Checker) *handler {
 	return &handler{
-		log:         log,
-		linkchecker: linkchecker,
+		log:     log,
+		checker: checker,
 	}
 }
