@@ -4,7 +4,8 @@ import (
 	linkshandler "goNiki/CheckLink/internal/http/handler/links"
 	"goNiki/CheckLink/internal/infrastructure/logger"
 	"goNiki/CheckLink/internal/infrastructure/logger/sl"
-	linkchecker "goNiki/CheckLink/internal/services/LinkChecker"
+	"goNiki/CheckLink/internal/services/checker"
+	linksstorage "goNiki/CheckLink/internal/storage/links"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -14,7 +15,9 @@ func main() {
 	log := logger.NewLogger()
 	log.Info("logger initialized")
 
-	linkchecker := linkchecker.NewLinkChecker(&http.Client{})
+	linksstorage := linksstorage.NewStorage()
+
+	linkchecker := checker.NewChecker(&http.Client{}, linksstorage)
 
 	handler := linkshandler.NewLinksHandler(log, linkchecker)
 
