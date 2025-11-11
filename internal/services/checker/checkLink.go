@@ -1,13 +1,19 @@
-package linkchecker
+package checker
 
 import (
 	"context"
+	"goNiki/CheckLink/internal/domain"
 	"net/http"
 	"strings"
 	"time"
 )
 
-func (s *service) LinkCheck(ctx context.Context, url string) (string, error) {
+func (s *service) CheckLink(ctx context.Context, url string) (domain.Link, error) {
+
+	link := domain.Link{
+		URL:    url,
+		Status: domain.StatusNotAvailable,
+	}
 
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "http://" + url
@@ -16,21 +22,22 @@ func (s *service) LinkCheck(ctx context.Context, url string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return "not available", err
+		return link, err
 	}
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return "not available", err
+		return link, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
-		return "available", nil
+		link.Status = domain.StatusAvailable
+		return link, nil
 	}
-	return "not available", err
+	return link, err
 
 }

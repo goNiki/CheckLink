@@ -1,7 +1,11 @@
 package services
 
-import "context"
+import (
+	"context"
+	"goNiki/CheckLink/internal/domain"
+)
 
-type Linkchecker interface {
-	LinkCheck(ctx context.Context, url string) (string, error)
+type Checker interface {
+	CheckLink(ctx context.Context, url string) (domain.Link, error)
+	CheckBatch(ctx context.Context, urls []string) (domain.LinkBatch, error)
 }
