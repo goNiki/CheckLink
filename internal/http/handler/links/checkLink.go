@@ -11,11 +11,11 @@ import (
 
 func (h *handler) CheckLink(w http.ResponseWriter, r *http.Request) {
 
-	var req dto.Req
+	var req dto.ReqCheckLink
 
 	if err := render.DecodeJSON(r.Body, &req); err != nil {
 		h.log.Error("ErrorDecode", sl.Error(err))
-		render.Status(r, http.StatusBadGateway)
+		render.Status(r, http.StatusBadRequest)
 		return
 	}
 

@@ -1,10 +1,14 @@
 package dto
 
-type Req struct {
+type ReqCheckLink struct {
 	Links []string `json:"links"`
 }
 
-type Response struct {
+type ResponseCheckLink struct {
 	Links    map[string]string `json:"links"`
 	LinksNum int64             `json:"links_num"`
+}
+
+type ReqGetReportLinks struct {
+	LinksList []int64 `json:"links_list"`
 }

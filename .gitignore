@@ -16,7 +16,8 @@
 
 # Dependency directories (remove the comment below to include it)
 task/
-
+date/
+test.html
 
 # Go workspace file
 go.work

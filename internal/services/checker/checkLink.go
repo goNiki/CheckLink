@@ -19,7 +19,7 @@ func (s *service) CheckLink(ctx context.Context, url string) (domain.Link, error
 		url = "http://" + url
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

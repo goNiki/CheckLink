@@ -5,8 +5,8 @@ import (
 	"goNiki/CheckLink/internal/dto"
 )
 
-func LinkBatchToResponce(l *domain.LinkBatch) *dto.Response {
-	return &dto.Response{
+func LinkBatchToResponce(l *domain.LinkBatch) *dto.ResponseCheckLink {
+	return &dto.ResponseCheckLink{
 		Links:    *LinksToDTOLinks(&l.Links),
 		LinksNum: l.Number,
 	}
