@@ -2,6 +2,7 @@ package main
 
 import (
 	linkshandler "goNiki/CheckLink/internal/http/handler/links"
+	"goNiki/CheckLink/internal/http/handler/middleware"
 	"goNiki/CheckLink/internal/infrastructure/logger"
 	"goNiki/CheckLink/internal/infrastructure/logger/sl"
 	"goNiki/CheckLink/internal/services/checker"
@@ -27,8 +28,12 @@ func main() {
 	handler := linkshandler.NewLinksHandler(log, linkchecker, reportservice)
 
 	r := chi.NewRouter()
+
+	// CORS middleware
+	r.Use(middleware.Cors)
+
 	r.Post("/links", handler.CheckLink)
-	r.Get("/links", handler.GetReportLinks)
+	r.Post("/links/report", handler.GetReportLinks)
 
 	srv := http.Server{
 		Addr:    ":8081",
