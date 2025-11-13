@@ -2,6 +2,8 @@ package checker
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"goNiki/CheckLink/internal/domain"
 	"sync"
 )
@@ -27,7 +29,7 @@ func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBat
 	wg.Wait()
 	close(resultChan)
 
-	links := make(map[string]domain.LinkStatus)
+	links := make(map[string]domain.LinkStatus, len(urls))
 	for res := range resultChan {
 		links[res.URL] = res.Status
 	}
@@ -39,9 +41,14 @@ func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBat
 		Number: number,
 	}
 
-	err := s.linkstorage.SaveDate(&linkBatch)
+	err := s.linkstorage.SaveDate(ctx, &linkBatch)
 	if err != nil {
 		return domain.LinkBatch{}, err
+	}
+
+	err = s.linkstorage.SaveInFile()
+	if err != nil {
+		return linkBatch, fmt.Errorf("%w: %v", errors.New("Error save"), err)
 	}
 
 	return linkBatch, nil

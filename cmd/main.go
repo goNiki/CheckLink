@@ -5,6 +5,8 @@ import (
 	"goNiki/CheckLink/internal/infrastructure/logger"
 	"goNiki/CheckLink/internal/infrastructure/logger/sl"
 	"goNiki/CheckLink/internal/services/checker"
+	"goNiki/CheckLink/internal/services/linkreport"
+	"goNiki/CheckLink/internal/storage/filestorage"
 	linksstorage "goNiki/CheckLink/internal/storage/links"
 	"net/http"
 
@@ -15,14 +17,18 @@ func main() {
 	log := logger.NewLogger()
 	log.Info("logger initialized")
 
-	linksstorage := linksstorage.NewStorage()
+	filestorage := filestorage.NewFileStorage()
+
+	linksstorage := linksstorage.NewStorage(filestorage)
 
 	linkchecker := checker.NewChecker(&http.Client{}, linksstorage)
+	reportservice := linkreport.NewLinkReportService(linksstorage)
 
-	handler := linkshandler.NewLinksHandler(log, linkchecker)
+	handler := linkshandler.NewLinksHandler(log, linkchecker, reportservice)
 
 	r := chi.NewRouter()
 	r.Post("/links", handler.CheckLink)
+	r.Get("/links", handler.GetReportLinks)
 
 	srv := http.Server{
 		Addr:    ":8081",
