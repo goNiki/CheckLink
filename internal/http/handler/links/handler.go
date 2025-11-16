@@ -5,14 +5,14 @@ import (
 	"log/slog"
 )
 
-type handler struct {
+type LinksHandler struct {
 	log     *slog.Logger
-	checker services.Checker
+	checker services.LinksChecker
 	report  services.ReportService
 }
 
-func NewLinksHandler(log *slog.Logger, checker services.Checker, report services.ReportService) *handler {
-	return &handler{
+func NewLinksHandler(log *slog.Logger, checker services.LinksChecker, report services.ReportService) *LinksHandler {
+	return &LinksHandler{
 		log:     log,
 		checker: checker,
 		report:  report,
