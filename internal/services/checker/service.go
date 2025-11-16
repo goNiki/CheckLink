@@ -1,18 +1,21 @@
 package checker
 
 import (
+	"goNiki/CheckLink/internal/client"
 	"goNiki/CheckLink/internal/storage"
-	"net/http"
+	"log/slog"
 )
 
 type service struct {
-	client      *http.Client
+	client      client.HTTPClient
 	linkstorage storage.LinksStorage
+	log         *slog.Logger
 }
 
-func NewChecker(client *http.Client, linkstorage storage.LinksStorage) *service {
+func NewLinksChecker(client client.HTTPClient, linkstorage storage.LinksStorage, log *slog.Logger) *service {
 	return &service{
 		client:      client,
 		linkstorage: linkstorage,
+		log:         log,
 	}
 }

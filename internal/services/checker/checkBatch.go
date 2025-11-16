@@ -2,25 +2,36 @@ package checker
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"goNiki/CheckLink/internal/domain"
+	"goNiki/CheckLink/internal/infrastructure/logger/sl"
 	"sync"
+	"time"
 )
 
+// TODO сделать канал для вывода всех ошибок связанных с проверкой.
 func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBatch, error) {
 
 	resultChan := make(chan domain.Link, len(urls))
+	errorChan := make(chan error, len(urls))
 
 	var wg sync.WaitGroup
+
+	semaphore := make(chan struct{}, 10)
 
 	for _, url := range urls {
 		wg.Add(1)
 		go func(u string) {
 			defer wg.Done()
+
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+
+			time.Sleep(100 * time.Millisecond)
+
 			link, err := s.CheckLink(ctx, u)
 			if err != nil {
 				link.Status = domain.StatusNotAvailable
+				errorChan <- err
 			}
 			resultChan <- link
 		}(url)
@@ -28,10 +39,20 @@ func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBat
 
 	wg.Wait()
 	close(resultChan)
+	close(errorChan)
 
+	errorResult := make([]error, 0, len(urls))
 	links := make(map[string]domain.LinkStatus, len(urls))
 	for res := range resultChan {
 		links[res.URL] = res.Status
+	}
+
+	for err := range errorChan {
+		errorResult = append(errorResult, err)
+	}
+
+	for _, err := range errorResult {
+		s.log.Error("error", sl.Error(err))
 	}
 
 	number := s.linkstorage.NextID()
@@ -41,14 +62,9 @@ func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBat
 		Number: number,
 	}
 
-	err := s.linkstorage.SaveDate(ctx, &linkBatch)
+	err := s.linkstorage.SaveLinks(ctx, &linkBatch)
 	if err != nil {
 		return domain.LinkBatch{}, err
-	}
-
-	err = s.linkstorage.SaveInFile()
-	if err != nil {
-		return linkBatch, fmt.Errorf("%w: %v", errors.New("Error save"), err)
 	}
 
 	return linkBatch, nil
