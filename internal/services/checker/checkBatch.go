@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// TODO сделать канал для вывода всех ошибок связанных с проверкой.
 func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBatch, error) {
 
 	resultChan := make(chan domain.Link, len(urls))
@@ -46,7 +45,8 @@ func (s *service) CheckBatch(ctx context.Context, urls []string) (domain.LinkBat
 	for res := range resultChan {
 		links[res.URL] = res.Status
 	}
-
+	//TODO реализовать логирование всех ошибок в отдельный файл с добавлением туда контекста в виде номера запроса
+	//и всех полученных статусов
 	for err := range errorChan {
 		errorResult = append(errorResult, err)
 	}
