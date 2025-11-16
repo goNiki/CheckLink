@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/render"
 )
 
-func (h *handler) GetReportLinks(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandler) GetReportLinks(w http.ResponseWriter, r *http.Request) {
 
 	var req dto.ReqGetReportLinks
 

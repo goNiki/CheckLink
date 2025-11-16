@@ -2,8 +2,9 @@ package checker
 
 import (
 	"context"
+	"fmt"
 	"goNiki/CheckLink/internal/domain"
-	"net/http"
+	"goNiki/CheckLink/pkg/errorsAPP"
 	"strings"
 	"time"
 )
@@ -19,25 +20,18 @@ func (s *service) CheckLink(ctx context.Context, url string) (domain.Link, error
 		url = "http://" + url
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	status, err := s.client.CheckLink(ctx, url)
 	if err != nil {
-		return link, err
+		return link, fmt.Errorf("%s: %w: %w", link.URL, errorsAPP.ErrCheckLink, err)
 	}
 
-	resp, err := s.client.Do(req)
-	if err != nil {
-		return link, err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
+	if status >= 200 && status < 400 {
 		link.Status = domain.StatusAvailable
 		return link, nil
 	}
-	return link, err
+	return link, fmt.Errorf("%s: %w: %v", link.URL, errorsAPP.ErrHTTPStatusInvalid, status)
 
 }

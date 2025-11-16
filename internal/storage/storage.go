@@ -7,13 +7,20 @@ import (
 )
 
 type LinksStorage interface {
-	SaveDate(ctx context.Context, linkBatch *domain.LinkBatch) error
+	SaveLinks(ctx context.Context, linkBatch *domain.LinkBatch) error
 	NextID() int64
-	SaveInFile() error
+	GetAllLinks(ctx context.Context) (map[int64]*domain.LinkBatch, int64, error)
 	GetByIDs(ctx context.Context, ids []int64) ([]domain.LinkBatch, error)
 }
 
 type FileStorage interface {
-	Save(date models.StorageDate) error
-	LoadDate() (models.StorageDate, error)
+	SaveTasksToFile(_ context.Context, tasks map[string]*domain.Task) error
+	SaveLinksToFile(_ context.Context, links map[int64]*domain.LinkBatch, lastID int64) error
+	LoadLinks() (models.StorageLinks, error)
+	LoadTask() (models.StorageTasks, error)
+}
+
+type TasksStorage interface {
+	SaveDate(ctx context.Context, task *domain.Task) error
+	GetAndCleanTasks(ctx context.Context) (map[string]*domain.Task, error)
 }

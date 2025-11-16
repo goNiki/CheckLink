@@ -1,8 +1,10 @@
 package linksstorage
 
 import (
+	"fmt"
 	"goNiki/CheckLink/internal/domain"
 	repo "goNiki/CheckLink/internal/storage"
+	"goNiki/CheckLink/pkg/errorsAPP"
 	"sync"
 	"sync/atomic"
 )
@@ -14,20 +16,20 @@ type storage struct {
 	filestorage repo.FileStorage
 }
 
-func NewStorage(repo repo.FileStorage) *storage {
-	date, err := repo.LoadDate()
+func NewLinksStorage(repo repo.FileStorage) (*storage, error) {
+	date, err := repo.LoadLinks()
 	if err != nil {
 		return &storage{
 			LinkBatch:   make(map[int64]*domain.LinkBatch),
 			filestorage: repo,
-		}
+		}, fmt.Errorf("%w: %w", errorsAPP.ErrLoadLinks, err)
 	}
-	var counter atomic.Int64
-	counter.Store(date.LastID)
 
-	return &storage{
+	s := &storage{
 		LinkBatch:   date.Batches,
-		counter:     counter,
 		filestorage: repo,
 	}
+	s.counter.Store(date.LastID)
+
+	return s, nil
 }
