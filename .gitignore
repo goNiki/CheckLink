@@ -18,6 +18,7 @@
 task/
 date/
 test.html
+logs/
 
 # Go workspace file
 go.work
