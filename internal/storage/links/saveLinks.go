@@ -5,7 +5,7 @@ import (
 	"goNiki/CheckLink/internal/domain"
 )
 
-func (s *storage) SaveDate(_ context.Context, linkBatch *domain.LinkBatch) error {
+func (s *storage) SaveLinks(_ context.Context, linkBatch *domain.LinkBatch) error {
 	s.mU.Lock()
 	defer s.mU.Unlock()
 	s.LinkBatch[linkBatch.Number] = linkBatch
